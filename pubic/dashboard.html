@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashboard | Rising Stars Cooperative</title>
+
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Rising Stars home"><span class="brand-mark"><img src="images/logo.png" alt="Rising Stars National Multipurpose Cooperative logo"></span><span>Rising Stars<small>National multipurpose cooperative union</small></span></a>
+    <h1>Member Dashboard</h1>
+    <button id="logoutBtn" type="button">Logout</button>
+  </header>
+
+  <main>
+
+    <!-- USER INFORMATION -->
+    <section id="userInfo">
+      <h2>
+        Welcome, <span id="userName">Member</span>
+      </h2>
+
+      <p>
+        Role:
+        <span id="userRole">Member</span>
+      </p>
+
+      <p>
+        Joined:
+        <span id="userJoined">-</span>
+      </p>
+    </section>
+
+
+    <!-- CONTRIBUTIONS -->
+    <section id="contributions">
+
+      <h3>Your Contributions</h3>
+
+      <ul id="contributionList">
+        <li>Loading contributions...</li>
+      </ul>
+
+      <form id="addContributionForm">
+
+        <label for="contributionAmount">
+          Contribution Amount
+        </label>
+
+        <input
+          type="number"
+          id="contributionAmount"
+          name="contributionAmount"
+          placeholder="Amount (e.g. 1000)"
+          min="1"
+          step="0.01"
+          required
+        >
+
+        <button type="submit">
+          Add Contribution
+        </button>
+
+      </form>
+
+      <div id="contributionMessage"></div>
+
+    </section>
+
+
+    <!-- ADMIN MEMBERS -->
+    <section id="membersList" hidden>
+
+      <h3>All Members</h3>
+
+      <ul id="membersContainer">
+        <li>Loading members...</li>
+      </ul>
+
+    </section>
+
+  </main>
+
+  <script src="js/dashboard.js"></script>
+
+</body>
+</html>
