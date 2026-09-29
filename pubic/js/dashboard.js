@@ -15,7 +15,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   window.location.href = '/login.html';
 });
 
-// Fetch dashboard data
 async function loadDashboard() {
   try {
     const res = await fetch('/api/dashboard', {
@@ -27,6 +26,8 @@ async function loadDashboard() {
     }
     const data = await res.json();
     renderContributions(data.contributions);
+    renderPayments(data.payments || []);
+    renderSummary(data.summary || {});
     if (user.role === 'admin') {
       document.getElementById('membersList').style.display = 'block';
       loadMembers();
@@ -47,7 +48,62 @@ function renderContributions(contributions) {
   }
   contributions.forEach(c => {
     const li = document.createElement('li');
-    li.textContent = `💰 $${c.amount} on ${new Date(c.date).toLocaleDateString()}`;
+    li.textContent = `💰 UGX ${Number(c.amount).toLocaleString()} on ${new Date(c.date).toLocaleDateString()}`;
+    list.appendChild(li);
+  });
+}
+
+function renderSummary(summary) {
+  const membershipStatus = document.getElementById('membershipStatus');
+  const totalShares = document.getElementById('totalShares');
+  const shareBalance = document.getElementById('shareBalance');
+
+  if (membershipStatus) membershipStatus.textContent = summary.membership_status || 'Pending';
+  if (totalShares) totalShares.textContent = `UGX ${Number(summary.total_shares || 0).toLocaleString()}`;
+  if (shareBalance) shareBalance.textContent = `UGX ${Number(summary.share_balance || 0).toLocaleString()}`;
+}
+
+function renderPayments(payments) {
+  const list = document.getElementById('paymentHistoryList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (!payments.length) {
+    list.innerHTML = '<li>No payment records yet.</li>';
+    return;
+  }
+
+  payments.forEach((payment) => {
+    const li = document.createElement('li');
+    const paymentDate = new Date(payment.created_at || Date.now()).toLocaleString();
+    const statusLabel = payment.status === 'successful' ? 'Confirmed' : payment.status === 'failed' ? 'Failed' : 'Pending';
+    li.innerHTML = `
+      <strong>${payment.package_name}</strong>
+      <span>UGX ${Number(payment.amount).toLocaleString()} • ${payment.method}</span>
+      <small>${statusLabel} • ${payment.reference}</small>
+      <small>${paymentDate}</small>
+    `;
+
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+    confirmButton.textContent = payment.status === 'successful' ? 'Confirmed' : 'Confirm payment';
+    confirmButton.disabled = payment.status === 'successful';
+    confirmButton.addEventListener('click', async () => {
+      if (payment.status === 'successful') return;
+      try {
+        const res = await fetch(`/api/payments/${payment.id}/confirm`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Confirmation failed');
+        await loadDashboard();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    li.appendChild(confirmButton);
     list.appendChild(li);
   });
 }
@@ -71,7 +127,6 @@ async function loadMembers() {
   }
 }
 
-// Add contribution
 document.getElementById('addContributionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const amount = document.getElementById('contributionAmount').value;
@@ -94,7 +149,40 @@ document.getElementById('addContributionForm').addEventListener('submit', async 
     msg.textContent = '✅ Contribution added!';
     msg.style.color = '#16a34a';
     document.getElementById('contributionAmount').value = '';
-    loadDashboard(); // refresh list
+    loadDashboard();
+  } catch (err) {
+    msg.textContent = 'Server error';
+    msg.style.color = '#dc2626';
+  }
+});
+
+document.getElementById('paymentFormDashboard').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const amount = Number(document.getElementById('dashboardPaymentAmount').value);
+  const method = document.getElementById('dashboardPaymentMethod').value;
+  const packageName = document.getElementById('dashboardPaymentType').value;
+  const msg = document.getElementById('dashboardPaymentMessage');
+
+  try {
+    const res = await fetch('/api/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ amount, method, package_name: packageName, status: 'pending' })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'Payment request failed';
+      msg.style.color = '#dc2626';
+      return;
+    }
+
+    msg.textContent = `Payment request created. Status: pending. Reference: ${data.reference}. Waiting for provider confirmation.`;
+    msg.style.color = '#0a3d62';
+    document.getElementById('dashboardPaymentAmount').value = '';
+    await loadDashboard();
   } catch (err) {
     msg.textContent = 'Server error';
     msg.style.color = '#dc2626';

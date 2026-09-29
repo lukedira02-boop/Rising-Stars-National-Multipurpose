@@ -73,6 +73,52 @@
 
     </section>
 
+    <section id="paymentsSection" class="payments-section">
+      <h3>Payment Status</h3>
+      <div class="payment-summary">
+        <div>
+          <span>Membership status</span>
+          <strong id="membershipStatus">Pending</strong>
+        </div>
+        <div>
+          <span>Total shares</span>
+          <strong id="totalShares">UGX 0</strong>
+        </div>
+        <div>
+          <span>Share balance</span>
+          <strong id="shareBalance">UGX 0</strong>
+        </div>
+      </div>
+
+      <form id="paymentFormDashboard">
+        <label for="dashboardPaymentType">Payment type</label>
+        <select id="dashboardPaymentType">
+          <option>Membership fee</option>
+          <option>Shares</option>
+          <option>Donation</option>
+        </select>
+
+        <label for="dashboardPaymentMethod">Payment method</label>
+        <select id="dashboardPaymentMethod">
+          <option>MTN Mobile Money</option>
+          <option>Airtel Money</option>
+          <option>Visa</option>
+          <option>Mastercard</option>
+        </select>
+
+        <label for="dashboardPaymentAmount">Amount (UGX)</label>
+        <input id="dashboardPaymentAmount" type="number" min="1" step="1" required>
+
+        <button type="submit">Initiate payment</button>
+      </form>
+      <div id="dashboardPaymentMessage"></div>
+
+      <h4>Payment history</h4>
+      <ul id="paymentHistoryList">
+        <li>No payment history yet.</li>
+      </ul>
+    </section>
+
 
     <!-- ADMIN MEMBERS -->
     <section id="membersList" hidden>

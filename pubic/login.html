@@ -11,7 +11,7 @@
   <div class="auth-container">
     <h2>Login</h2>
     <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="text" id="loginIdentifier" placeholder="Email or phone number" required>
       <input type="password" id="loginPassword" placeholder="Password" required>
       <button type="submit">Sign In</button>
       <div id="loginMessage" class="message"></div>
@@ -21,7 +21,8 @@
     <form id="registerForm">
       <input type="text" id="regName" placeholder="Full Name" required>
       <input type="email" id="regEmail" placeholder="Email" required>
-      <input type="password" id="regPassword" placeholder="Password" required>
+      <input type="tel" id="regPhone" placeholder="Phone Number" required>
+      <input type="password" id="regPassword" placeholder="Password" minlength="6" required>
       <button type="submit">Create Account</button>
       <div id="regMessage" class="message"></div>
     </form>

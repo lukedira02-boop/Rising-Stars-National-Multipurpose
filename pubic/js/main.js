@@ -60,11 +60,50 @@ paymentChoices.forEach((choice) => {
 });
 
 if (paymentForm && paymentMessage) {
-	paymentForm.addEventListener('submit', (event) => {
+	paymentForm.addEventListener('submit', async (event) => {
 		event.preventDefault();
-		const amount = document.getElementById('paymentAmount').value;
+		const amount = Number(document.getElementById('paymentAmount').value);
 		const method = selectedMethod ? selectedMethod.textContent : 'your selected method';
-		paymentMessage.textContent = `Payment request ready for UGX ${Number(amount).toLocaleString()} via ${method}. The Treasurer will confirm the next step.`;
+		const packageName = document.getElementById('paymentType')?.value || 'Membership fee';
+		const token = localStorage.getItem('token');
+
+		if (!amount || amount <= 0) {
+			paymentMessage.textContent = 'Please enter a valid amount.';
+			paymentMessage.style.color = '#b33b3b';
+			return;
+		}
+
+		if (!token) {
+			paymentMessage.textContent = 'Please log in before making a payment.';
+			paymentMessage.style.color = '#b33b3b';
+			return;
+		}
+
+		paymentMessage.textContent = 'Processing payment request...';
+		paymentMessage.style.color = '#0a3d62';
+
+		try {
+			const response = await fetch('/api/payments', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					amount,
+					method,
+					package_name: packageName,
+					status: 'pending'
+				})
+			});
+			const result = await response.json();
+			if (!response.ok) throw new Error(result.error || 'Payment request failed');
+			paymentMessage.textContent = `Payment request created for UGX ${Number(amount).toLocaleString()} via ${method}. Reference: ${result.reference}. The Treasurer will confirm the next step.`;
+			paymentMessage.style.color = '#18794e';
+		} catch (error) {
+			paymentMessage.textContent = error.message || 'Payment request failed.';
+			paymentMessage.style.color = '#b33b3b';
+		}
 	});
 }
 
@@ -86,7 +125,7 @@ if (countdownLabel && countdownFields.days) {
 		const minutes = Math.floor((remaining % 3600000) / 60000);
 		const seconds = Math.floor((remaining % 60000) / 1000);
 		countdownFields.days.textContent = String(days).padStart(2, '0');
-		countdownFields.hours.textContent = String(hours).padStart(2, '0');==-
+		countdownFields.hours.textContent = String(hours).padStart(2, '0');
 		countdownFields.minutes.textContent = String(minutes).padStart(2, '0');
 		countdownFields.seconds.textContent = String(seconds).padStart(2, '0');
 	};
